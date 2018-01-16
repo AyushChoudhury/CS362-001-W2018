@@ -1,6 +1,6 @@
 package calendar;
 /*
- * CalendarMain.java
+ * CalendarMain.java 
  *  Adapted from  Paul Miles
  */
 import java.util.Calendar;
