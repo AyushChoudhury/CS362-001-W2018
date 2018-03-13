@@ -1,0 +1,84 @@
+I was able to find two bugs in my teammates code.
+  
+Bug #1: Month validation
+The bug appears to make it so that any application made in the month of December is not valid. This is caused by the IsValid() function thinking the month value 12 is invalid.  
+I was able to find this bug due to the fact that any application that was initialized with the month value equal to 12 failed the assertTrue(appt.getValid()) assertion. 
+If you run the following test you will find that the one assertion made in the test fails:
+
+@Test
+	  public void test01()  throws Throwable  {
+		 int startHour=21;
+		 int startMinute=30;
+		 int startDay=15;
+		 int startMonth=12;
+		 int startYear=2018;
+		 String title="Birthday Party";
+		 String description="This is my birthday party.";
+		 Appt appt = new Appt(startHour,
+		          startMinute ,
+		          startDay ,
+		          startMonth ,
+		          startYear ,
+		          title,
+		         description);
+		 assertTrue(appt.getValid());
+}
+
+Changing the value of the month to another valid month between 1 - 11 will pass the test, but the month 12, will always fail. This means that the bug is specifically in the IsValid() function where the month of the appointment is checked. After looking at the code I found that this indeed was the case, and the program changes the code where month > 12 is set to invalid, to where month >= 12 is set to invalid. There severity of this bug is not huge as it does not completely crash the code, but it does compromise the ability for Calendar to achieve one of its main functions, creating appointments. Because the it is very important that Calendar can create appointments properly and the fact that this bug is a very easy fix, I think the priority for fixing this bug should be pretty high.
+
+Bug #2: Recur number and recur increment
+This bug makes it so both the recur number and the recur increment are flipped. This bug is in the setReccurence() function of the Appt.java where the set recur number and set recur increment are first initialized. I found this when asserting that the values for recur number and increment are are correct after calling set recurrence in the ApptRandomTest.java file. Upon looking at the code it seems that the two function are called with the wrong values, where set recur number is called with recur increment and set recur Increment is called with recur number.
+
+You can always hit the bug by running the following test:
+
+ @Test
+	  public void radnomtest()  throws Throwable  {
+		 long startTime = Calendar.getInstance().getTimeInMillis();
+		 long elapsed = Calendar.getInstance().getTimeInMillis() - startTime;
+		 System.out.println("Start testing...");
+		try{ 
+			for (int iteration = 0; elapsed < TestTimeout; iteration++) {
+				long randomseed =System.currentTimeMillis(); 
+				Random random = new Random(randomseed);
+				
+				 int startHour=ValuesGenerator.RandInt(random);
+				 int startMinute=ValuesGenerator.RandInt(random);
+				 int startDay=ValuesGenerator.RandInt(random);;
+				 int startMonth=ValuesGenerator.getRandomIntBetween(random, 1, 11);
+				 int startYear=ValuesGenerator.RandInt(random);
+				 String title="Birthday Party";
+				 String description="This is my birthday party.";
+				 Appt appt = new Appt(startHour,
+				          startMinute ,
+				          startDay ,
+				          startMonth ,
+				          startYear ,
+				          title,
+				         description);
+			 if(!appt.getValid())continue;
+			for (int i = 0; i < NUM_TESTS; i++) {
+					String methodName = ApptRandomTest.RandomSelectMethod(random);
+					   if (methodName.equals("setTitle")){
+						   String newTitle=(String) ValuesGenerator.getString(random);
+						   appt.setTitle(newTitle);					
+						}
+					   else if (methodName.equals("setRecurrence")){
+						   int sizeArray=ValuesGenerator.getRandomIntBetween(random, 0, 8);
+						   int[] recurDays=ValuesGenerator.generateRandomArray(random, sizeArray);
+						   int recur=ApptRandomTest.RandomSelectRecur(random);
+						   int recurIncrement=ValuesGenerator.RandInt(random);
+						   int recurNumber=ApptRandomTest.RandomSelectRecurForEverNever(random);
+						   appt.setRecurrence(recurDays, recur, recurIncrement, recurNumber);
+						   assertEquals(recurNumber, appt.getRecurNumber());
+						   assertEquals(recurIncrement, appt.getRecurIncrement());
+						}				
+				}
+				 elapsed = (Calendar.getInstance().getTimeInMillis() - startTime);
+			        if((iteration%10000)==0 && iteration!=0 )
+			              System.out.println("elapsed time: "+ elapsed + " of "+TestTimeout);
+			}
+		}catch(NullPointerException e){	
+		}
+		 System.out.println("Done testing...");
+	 }
+  You will always get an error at the assert, for both checking recurNumber and recurIncrement the assert always fails, and on closer inspection these two value seem to be flipped. The severity of this bug is not too big. It does not crash the program and the bug only appears if the user wants to create a recurring appointment. However, the bug does stop the program from accomplishing fundamental tasks such as creating recurring appointments. Furthermore since bug would be easy to fix, it should have a high priority.
